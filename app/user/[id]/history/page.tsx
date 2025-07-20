@@ -115,7 +115,7 @@ export default function HistoryPage() {
       >
         ← Wróć do profilu
       </Link>
-      <h1 className="text-2xl font-semibold text-white">Historia zakładów</h1>
+      <h1 className="text-2xl font-semibold text-black">Historia zakładów</h1>
 
       {bets.map(b => {
         const m = b.match_id != null ? matches[b.match_id] : null

@@ -61,7 +61,7 @@ export default function GroupPage() {
 
       {!selected ? (
         <>
-          <h1 className="text-2xl mb-4 text-white">Grupa {group}</h1>
+          <h1 className="text-2xl mb-4 text-black">Grupa {group}</h1>
           {matches.map(m => (
             <button
               key={m.id}
@@ -93,10 +93,10 @@ export default function GroupPage() {
             ← Wybierz inny mecz
           </button>
 
-          <h2 className="text-xl mb-2 text-white">
+          <h2 className="text-xl mb-2 text-black">
             Kursy: {matches.find(m=>m.id===selected)?.team_a} vs {matches.find(m=>m.id===selected)?.team_b}
           </h2>
-          <p className="mb-4 text-white font-medium">Saldo: {points} pkt</p>
+          <p className="mb-4 text-black font-medium">Saldo: {points} pkt</p>
 
           {matches.find(m=>m.id===selected)?.is_finished ? (
             // zakończony: pokazujemy wynik kursów
