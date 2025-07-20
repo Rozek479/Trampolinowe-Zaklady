@@ -1,19 +1,21 @@
 // app/api/admin/login/route.ts
-import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { NextRequest, NextResponse } from 'next/server'
+import { serialize }          from 'cookie'
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   const { password } = await req.json()
   if (password === process.env.ADMIN_PASSWORD) {
-    cookies().set({
-      name: 'admin-token',
-      value: 'allow',
-      httpOnly: true,
-      path: '/admin',
-      maxAge: 60 * 60,
-      sameSite: 'strict'
-    })
-    return NextResponse.json({ ok: true })
+    const res = NextResponse.json({ ok: true })
+    res.headers.set('Set-Cookie',
+      serialize('admin-token', 'allow', {
+        httpOnly: true,
+        path: '/admin',
+        maxAge: 3600,
+        sameSite: 'strict',
+        secure: process.env.NODE_ENV === 'production',
+      })
+    )
+    return res
   } else {
     return NextResponse.json({ error: 'Nieprawidłowe hasło' }, { status: 401 })
   }

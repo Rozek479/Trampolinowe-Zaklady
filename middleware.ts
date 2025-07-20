@@ -1,22 +1,21 @@
 // middleware.ts
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextResponse }       from 'next/server'
+import type { NextRequest }   from 'next/server'
 
 export function middleware(req: NextRequest) {
-  const url = req.nextUrl.clone()
-  const { pathname } = url
-
-  // chronimy wszystko pod /admin, poza /admin/login
+  const { pathname, cookies } = req
+  // jeśli ścieżka zaczyna się od /admin, poza /admin/login, wymaga tokenu:
   if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
-    const token = req.cookies.get('admin-token')?.value
+    const token = cookies.get('admin-token')?.value
     if (token !== 'allow') {
-      url.pathname = '/admin/login'
-      return NextResponse.redirect(url)
+      // przekieruj na logowanie
+      return NextResponse.redirect(new URL('/admin/login', req.url))
     }
   }
   return NextResponse.next()
 }
 
+// stosujemy middleware tylko na /admin
 export const config = {
   matcher: ['/admin/:path*']
 }
