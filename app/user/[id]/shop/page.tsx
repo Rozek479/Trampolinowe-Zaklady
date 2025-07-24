@@ -1,4 +1,3 @@
-// app/user/[id]/shop/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -20,21 +19,23 @@ export default function UserShopPage() {
 
   const [items, setItems] = useState<Item[]>([])
   const [points, setPoints] = useState<number>(0)
+  const [loanAmount, setLoanAmount] = useState<number>(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // 1. Pobierz saldo i ofertę sklepu
+  // 1. Pobierz saldo, loan_amount i ofertę sklepu
   useEffect(() => {
     async function load() {
       try {
-        // saldo
+        // saldo + loan
         const { data: u, error: ue } = await supabase
           .from('users')
-          .select('points')
+          .select('points, loan_amount')
           .eq('id', userId)
           .single()
         if (ue) throw ue
         setPoints(u?.points ?? 0)
+        setLoanAmount(u?.loan_amount ?? 0)
 
         // przedmioty
         const { data: itemsData, error: ie } = await supabase
@@ -56,6 +57,23 @@ export default function UserShopPage() {
   if (loading) return <p className="p-6">Ładowanie sklepu…</p>
   if (error)   return <p className="p-6 text-red-600">{error}</p>
   if (!items.length) return <p className="p-6">Brak ofert w sklepie.</p>
+
+  // Blokada sklepu jeśli jest pożyczka
+  if (loanAmount > 0) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <Link
+          href={`/user/${userId}`}
+          className="text-indigo-600 hover:underline mb-4 block"
+        >
+          ← Wróć do profilu
+        </Link>
+        <div className="mb-6 text-red-600 font-bold text-lg">
+          Najpierw spłać pożyczkę w banku, żeby móc kupować w sklepie!
+        </div>
+      </div>
+    )
+  }
 
   const handleBuy = async (itemId: number, cost: number, name: string) => {
     if (cost > points) {
