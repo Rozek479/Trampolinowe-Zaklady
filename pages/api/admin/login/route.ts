@@ -1,12 +1,23 @@
-// app/api/admin/login/route.ts
-import { NextRequest, NextResponse } from 'next/server'
-import { serialize }          from 'cookie'
+// pages/api/admin/login.ts
+import type { NextApiRequest, NextApiResponse } from 'next'
+import { serialize } from 'cookie'
 
-export async function POST(req: NextRequest) {
-  const { password } = await req.json()
+type Data = { ok?: boolean; error?: string }
+
+export default function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
+  // zawsze JSON
+  res.setHeader('Content-Type', 'application/json')
+
+  if (req.method !== 'POST') {
+    return res
+      .status(405)
+      .json({ error: `Method ${req.method} Not Allowed` })
+  }
+
+  const { password } = req.body as { password?: string }
   if (password === process.env.ADMIN_PASSWORD) {
-    const res = NextResponse.json({ ok: true })
-    res.headers.set('Set-Cookie',
+    res.setHeader(
+      'Set-Cookie',
       serialize('admin-token', 'allow', {
         httpOnly: true,
         path: '/admin',
@@ -15,8 +26,8 @@ export async function POST(req: NextRequest) {
         secure: process.env.NODE_ENV === 'production',
       })
     )
-    return res
+    return res.status(200).json({ ok: true })
   } else {
-    return NextResponse.json({ error: 'Nieprawidłowe hasło' }, { status: 401 })
+    return res.status(401).json({ error: 'Nieprawidłowe hasło' })
   }
 }

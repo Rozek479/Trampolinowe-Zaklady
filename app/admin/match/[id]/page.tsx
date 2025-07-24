@@ -14,6 +14,13 @@ export default function MatchAdminPage() {
   const [winningOdds, setWinningOdds] = useState<Set<number>>(new Set())
   const [result, setResult] = useState('')
   const [error, setError] = useState('')
+  const [description, setDescription] = useState('')
+  const [descLoading, setDescLoading] = useState(false)
+  // NOWE: stan edycji kursu
+  const [editingOddId, setEditingOddId] = useState<number | null>(null)
+  const [editDescription, setEditDescription] = useState('')
+  const [editOdd, setEditOdd] = useState('')
+  const [editLoading, setEditLoading] = useState(false)
 
   useEffect(() => {
     (async () => {
@@ -30,9 +37,8 @@ export default function MatchAdminPage() {
       setMatch(m)
       setOdds(o || [])
       if (m?.result) setResult(m.result)
-      if (Array.isArray(m?.winning_odds)) {
-        setWinningOdds(new Set(m.winning_odds))
-      }
+      if (Array.isArray(m?.winning_odds)) setWinningOdds(new Set(m.winning_odds))
+      setDescription(m?.description ?? '')
     })()
   }, [id])
 
@@ -42,7 +48,6 @@ export default function MatchAdminPage() {
     if (!newDesc || !newOdd) return setError('Podaj opis i kurs')
     const val = parseFloat(newOdd.replace(',', '.'))
     if (isNaN(val) || val <= 0) return setError('Niepoprawny kurs')
-    // **TU**: dodajemy bet_type
     const { error: ie } = await supabase
       .from('odds')
       .insert([{
@@ -86,6 +91,49 @@ export default function MatchAdminPage() {
     router.push('/admin')
   }
 
+  // NOWE: zapisz opis meczu
+  const saveDescription = async () => {
+    setDescLoading(true)
+    const matchId = Number(id)
+    const { error } = await supabase
+      .from('matches')
+      .update({ description })
+      .eq('id', matchId)
+    setDescLoading(false)
+    if (error) setError(error.message)
+    else alert('Opis meczu zapisany!')
+  }
+
+  // NOWE: zapisz edytowany kurs
+  const saveEditedOdd = async () => {
+    setEditLoading(true)
+    const val = parseFloat(editOdd.replace(',', '.'))
+    if (!editDescription || isNaN(val) || val <= 0) {
+      setError('Podaj poprawny opis i kurs')
+      setEditLoading(false)
+      return
+    }
+    const { error } = await supabase
+      .from('odds')
+      .update({ description: editDescription, odd: val })
+      .eq('id', editingOddId)
+    setEditLoading(false)
+    if (error) {
+      setError(error.message)
+    } else {
+      setEditingOddId(null)
+      setEditDescription('')
+      setEditOdd('')
+      // odśwież kursy
+      const matchId = Number(id)
+      const { data: o } = await supabase
+        .from('odds')
+        .select('*')
+        .eq('match_id', matchId)
+      setOdds(o || [])
+    }
+  }
+
   if (!match) return <p className="p-6 text-gray-900">Ładowanie…</p>
 
   return (
@@ -107,7 +155,81 @@ export default function MatchAdminPage() {
         />
       </div>
 
+      {/* NOWE: opis meczu */}
+      <div className="mb-6">
+        <label className="block mb-1 text-gray-900 font-medium">Opis meczu:</label>
+        <textarea
+          className="w-full border p-2 rounded text-black"
+          rows={3}
+          placeholder="Dodaj opis meczu (np. wydarzenia, podsumowanie, ciekawostki)"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+        />
+        <button
+          onClick={saveDescription}
+          className="mt-2 bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded"
+          disabled={descLoading}
+        >
+          {descLoading ? 'Zapisywanie...' : 'Zapisz opis'}
+        </button>
+      </div>
+
       <section className="mb-8">
+        <h2 className="text-xl mb-2 text-gray-900">Kursy meczu</h2>
+        {odds.map(o => (
+          <div key={o.id} className="flex flex-col space-y-1 mb-3 p-3 border rounded">
+            {editingOddId === o.id ? (
+              // Formularz edycji kursu
+              <div>
+                <input
+                  className="border p-1 rounded w-full mb-1 text-black"
+                  value={editDescription}
+                  onChange={e => setEditDescription(e.target.value)}
+                  placeholder="Opis kursu"
+                />
+                <input
+                  className="border p-1 rounded w-1/2 text-black mb-1"
+                  value={editOdd}
+                  onChange={e => setEditOdd(e.target.value)}
+                  placeholder="Kurs"
+                  type="number"
+                  step="0.01"
+                />
+                <div className="flex space-x-2">
+                  <button
+                    onClick={saveEditedOdd}
+                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
+                    disabled={editLoading}
+                  >
+                    {editLoading ? 'Zapisywanie...' : 'Zapisz'}
+                  </button>
+                  <button
+                    onClick={() => setEditingOddId(null)}
+                    className="bg-gray-400 hover:bg-gray-500 text-white px-3 py-1 rounded"
+                  >
+                    Anuluj
+                  </button>
+                </div>
+                {error && <div className="text-red-600 mt-1">{error}</div>}
+              </div>
+            ) : (
+              // Widok kursu + przycisk edycji
+              <div className="flex items-center justify-between">
+                <span>{o.description} — <span className="font-bold">{o.odd}</span></span>
+                <button
+                  onClick={() => {
+                    setEditingOddId(o.id)
+                    setEditDescription(o.description)
+                    setEditOdd(String(o.odd))
+                  }}
+                  className="ml-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
+                >
+                  Edytuj
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
         <h2 className="text-xl mb-2 text-gray-900">Zaznacz kursy wygrane</h2>
         {odds.map(o => (
           <label key={o.id} className="flex items-center mb-1">

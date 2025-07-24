@@ -12,7 +12,8 @@ C:.
 ³   package.json
 ³   postcss.config.mjs
 ³   README.md
-³   struktura.txt
+³   struktura1.txt
+³   struktura2.txt
 ³   struktura3.txt
 ³   tsconfig.json
 ³   
@@ -68,7 +69,6 @@ C:.
 ³   ³       ÃÄÄÄclient-development-fallback
 ³   ³       ³       0.pack.gz
 ³   ³       ³       1.pack.gz
-³   ³       ³       2.pack.gz
 ³   ³       ³       index.pack.gz
 ³   ³       ³       index.pack.gz.old
 ³   ³       ³       
@@ -108,9 +108,6 @@ C:.
 ³   ³               32.pack.gz
 ³   ³               33.pack.gz
 ³   ³               34.pack.gz
-³   ³               35.pack.gz
-³   ³               36.pack.gz
-³   ³               37.pack.gz
 ³   ³               4.pack.gz
 ³   ³               5.pack.gz
 ³   ³               6.pack.gz
@@ -133,6 +130,7 @@ C:.
 ³   ³   ³   pages-manifest.json
 ³   ³   ³   server-reference-manifest.js
 ³   ³   ³   server-reference-manifest.json
+³   ³   ³   webpack-api-runtime.js
 ³   ³   ³   webpack-runtime.js
 ³   ³   ³   
 ³   ³   ÃÄÄÄapp
@@ -143,43 +141,54 @@ C:.
 ³   ³   ³   ³   ³   page.js
 ³   ³   ³   ³   ³   page_client-reference-manifest.js
 ³   ³   ³   ³   ³   
-³   ³   ³   ³   ÃÄÄÄgroup-bets
-³   ³   ³   ³   ³   ³   page.js
-³   ³   ³   ³   ³   ³   page_client-reference-manifest.js
-³   ³   ³   ³   ³   ³   
-³   ³   ³   ³   ³   ÃÄÄÄnew
-³   ³   ³   ³   ³   ³       page.js
-³   ³   ³   ³   ³   ³       page_client-reference-manifest.js
-³   ³   ³   ³   ³   ³       
-³   ³   ³   ³   ³   ÀÄÄÄ[id]
-³   ³   ³   ³   ³           page.js
-³   ³   ³   ³   ³           page_client-reference-manifest.js
-³   ³   ³   ³   ³           
 ³   ³   ³   ³   ÃÄÄÄlogin
 ³   ³   ³   ³   ³       page.js
 ³   ³   ³   ³   ³       page_client-reference-manifest.js
 ³   ³   ³   ³   ³       
-³   ³   ³   ³   ÀÄÄÄmatch
-³   ³   ³   ³       ÀÄÄÄ[id]
-³   ³   ³   ³               page.js
-³   ³   ³   ³               page_client-reference-manifest.js
-³   ³   ³   ³               
+³   ³   ³   ³   ÃÄÄÄmatch
+³   ³   ³   ³   ³   ÀÄÄÄ[id]
+³   ³   ³   ³   ³           page.js
+³   ³   ³   ³   ³           page_client-reference-manifest.js
+³   ³   ³   ³   ³           
+³   ³   ³   ³   ÃÄÄÄnew
+³   ³   ³   ³   ³       page.js
+³   ³   ³   ³   ³       page_client-reference-manifest.js
+³   ³   ³   ³   ³       
+³   ³   ³   ³   ÀÄÄÄpurchases
+³   ³   ³   ³           page.js
+³   ³   ³   ³           page_client-reference-manifest.js
+³   ³   ³   ³           
 ³   ³   ³   ÃÄÄÄapi
 ³   ³   ³   ³   ÀÄÄÄadmin
-³   ³   ³   ³       ³   settle-group.js
-³   ³   ³   ³       ³   
 ³   ³   ³   ³       ÀÄÄÄlogin
 ³   ³   ³   ³               route.js
 ³   ³   ³   ³               route_client-reference-manifest.js
 ³   ³   ³   ³               
-³   ³   ³   ÃÄÄÄuser
-³   ³   ³   ³   ÀÄÄÄ[id]
-³   ³   ³   ³           page.js
-³   ³   ³   ³           page_client-reference-manifest.js
-³   ³   ³   ³           
-³   ³   ³   ÀÄÄÄ_not-found
-³   ³   ³           page.js
-³   ³   ³           page_client-reference-manifest.js
+³   ³   ³   ÀÄÄÄuser
+³   ³   ³       ÀÄÄÄ[id]
+³   ³   ³           ³   page.js
+³   ³   ³           ³   page_client-reference-manifest.js
+³   ³   ³           ³   
+³   ³   ³           ÃÄÄÄgroup
+³   ³   ³           ³   ÀÄÄÄ[group]
+³   ³   ³           ³           page.js
+³   ³   ³           ³           page_client-reference-manifest.js
+³   ³   ³           ³           
+³   ³   ³           ÃÄÄÄhistory
+³   ³   ³           ³       page.js
+³   ³   ³           ³       page_client-reference-manifest.js
+³   ³   ³           ³       
+³   ³   ³           ÀÄÄÄshop
+³   ³   ³                   page.js
+³   ³   ³                   page_client-reference-manifest.js
+³   ³   ³                   
+³   ³   ÃÄÄÄpages
+³   ³   ³   ³   _app.js
+³   ³   ³   ³   _document.js
+³   ³   ³   ³   _error.js
+³   ³   ³   ³   
+³   ³   ³   ÀÄÄÄapi
+³   ³   ³           settle.js
 ³   ³   ³           
 ³   ³   ÃÄÄÄstatic
 ³   ³   ³   ÀÄÄÄwebpack
@@ -200,45 +209,57 @@ C:.
 ³   ³   ÃÄÄÄchunks
 ³   ³   ³   ³   app-pages-internals.js
 ³   ³   ³   ³   main-app.js
+³   ³   ³   ³   main.js
 ³   ³   ³   ³   polyfills.js
+³   ³   ³   ³   react-refresh.js
 ³   ³   ³   ³   webpack.js
 ³   ³   ³   ³   _app-pages-browser_node_modules_next_dist_client_dev_noop-turbopack-hmr_js.js
+³   ³   ³   ³   _pages-dir-browser_node_modules_next_dist_pages__app_js.js
+³   ³   ³   ³   _pages-dir-browser_node_modules_next_dist_pages__error_js.js
 ³   ³   ³   ³   
-³   ³   ³   ÀÄÄÄapp
-³   ³   ³       ³   layout.js
-³   ³   ³       ³   page.js
-³   ³   ³       ³   
-³   ³   ³       ÃÄÄÄadmin
-³   ³   ³       ³   ³   page.js
-³   ³   ³       ³   ³   
-³   ³   ³       ³   ÃÄÄÄgroup-bets
-³   ³   ³       ³   ³   ³   page.js
-³   ³   ³       ³   ³   ³   
-³   ³   ³       ³   ³   ÃÄÄÄnew
-³   ³   ³       ³   ³   ³       page.js
-³   ³   ³       ³   ³   ³       
-³   ³   ³       ³   ³   ÀÄÄÄ[id]
-³   ³   ³       ³   ³           page.js
-³   ³   ³       ³   ³           
-³   ³   ³       ³   ÃÄÄÄlogin
-³   ³   ³       ³   ³       page.js
-³   ³   ³       ³   ³       
-³   ³   ³       ³   ÀÄÄÄmatch
-³   ³   ³       ³       ÀÄÄÄ[id]
-³   ³   ³       ³               page.js
-³   ³   ³       ³               
-³   ³   ³       ÃÄÄÄapi
-³   ³   ³       ³   ÀÄÄÄadmin
-³   ³   ³       ³       ÀÄÄÄlogin
-³   ³   ³       ³               route.js
-³   ³   ³       ³               
-³   ³   ³       ÃÄÄÄuser
-³   ³   ³       ³   ÀÄÄÄ[id]
-³   ³   ³       ³           page.js
-³   ³   ³       ³           
-³   ³   ³       ÀÄÄÄ_not-found
-³   ³   ³               page.js
-³   ³   ³               
+³   ³   ³   ÃÄÄÄapp
+³   ³   ³   ³   ³   layout.js
+³   ³   ³   ³   ³   page.js
+³   ³   ³   ³   ³   
+³   ³   ³   ³   ÃÄÄÄadmin
+³   ³   ³   ³   ³   ³   page.js
+³   ³   ³   ³   ³   ³   
+³   ³   ³   ³   ³   ÃÄÄÄlogin
+³   ³   ³   ³   ³   ³       page.js
+³   ³   ³   ³   ³   ³       
+³   ³   ³   ³   ³   ÃÄÄÄmatch
+³   ³   ³   ³   ³   ³   ÀÄÄÄ[id]
+³   ³   ³   ³   ³   ³           page.js
+³   ³   ³   ³   ³   ³           
+³   ³   ³   ³   ³   ÃÄÄÄnew
+³   ³   ³   ³   ³   ³       page.js
+³   ³   ³   ³   ³   ³       
+³   ³   ³   ³   ³   ÀÄÄÄpurchases
+³   ³   ³   ³   ³           page.js
+³   ³   ³   ³   ³           
+³   ³   ³   ³   ÃÄÄÄapi
+³   ³   ³   ³   ³   ÀÄÄÄadmin
+³   ³   ³   ³   ³       ÀÄÄÄlogin
+³   ³   ³   ³   ³               route.js
+³   ³   ³   ³   ³               
+³   ³   ³   ³   ÀÄÄÄuser
+³   ³   ³   ³       ÀÄÄÄ[id]
+³   ³   ³   ³           ³   page.js
+³   ³   ³   ³           ³   
+³   ³   ³   ³           ÃÄÄÄgroup
+³   ³   ³   ³           ³   ÀÄÄÄ[group]
+³   ³   ³   ³           ³           page.js
+³   ³   ³   ³           ³           
+³   ³   ³   ³           ÃÄÄÄhistory
+³   ³   ³   ³           ³       page.js
+³   ³   ³   ³           ³       
+³   ³   ³   ³           ÀÄÄÄshop
+³   ³   ³   ³                   page.js
+³   ³   ³   ³                   
+³   ³   ³   ÀÄÄÄpages
+³   ³   ³           _app.js
+³   ³   ³           _error.js
+³   ³   ³           
 ³   ³   ÃÄÄÄcss
 ³   ³   ³   ÀÄÄÄapp
 ³   ³   ³           layout.css
@@ -256,42 +277,31 @@ C:.
 ³   ³   ³       ba015fad6dcf6784-s.woff2
 ³   ³   ³       
 ³   ³   ÀÄÄÄwebpack
-³   ³       ³   013576dc4e756a5a.webpack.hot-update.json
-³   ³       ³   1994d1e2d1d5e884.webpack.hot-update.json
-³   ³       ³   1ba566ceb045903d.webpack.hot-update.json
-³   ³       ³   366eaa64d93d1c0d.webpack.hot-update.json
-³   ³       ³   415bb1564c52eebe.webpack.hot-update.json
-³   ³       ³   4a72a82816dda744.webpack.hot-update.json
-³   ³       ³   5b145144970ba30c.webpack.hot-update.json
-³   ³       ³   624271a7f126e64b.webpack.hot-update.json
+³   ³       ³   0d895e592126c752.webpack.hot-update.json
+³   ³       ³   301b99650cb0ca1f.webpack.hot-update.json
+³   ³       ³   4169ca75cf2da7db.webpack.hot-update.json
+³   ³       ³   5aa3bed99cbaf163.webpack.hot-update.json
 ³   ³       ³   633457081244afec._.hot-update.json
-³   ³       ³   766b024a4d8ee6f7.webpack.hot-update.json
-³   ³       ³   7c1562197348010b.webpack.hot-update.json
-³   ³       ³   a96c78833921156e.webpack.hot-update.json
-³   ³       ³   f2c1ebb656115405.webpack.hot-update.json
-³   ³       ³   webpack.013576dc4e756a5a.hot-update.js
-³   ³       ³   webpack.1994d1e2d1d5e884.hot-update.js
-³   ³       ³   webpack.1ba566ceb045903d.hot-update.js
-³   ³       ³   webpack.366eaa64d93d1c0d.hot-update.js
-³   ³       ³   webpack.415bb1564c52eebe.hot-update.js
-³   ³       ³   webpack.4a72a82816dda744.hot-update.js
-³   ³       ³   webpack.5b145144970ba30c.hot-update.js
-³   ³       ³   webpack.624271a7f126e64b.hot-update.js
-³   ³       ³   webpack.766b024a4d8ee6f7.hot-update.js
-³   ³       ³   webpack.7c1562197348010b.hot-update.js
-³   ³       ³   webpack.a96c78833921156e.hot-update.js
-³   ³       ³   webpack.f2c1ebb656115405.hot-update.js
+³   ³       ³   7af9d689d696e80d.webpack.hot-update.json
+³   ³       ³   829f1a4b2eac1db7.webpack.hot-update.json
+³   ³       ³   8a65aa76e7c04198.webpack.hot-update.json
+³   ³       ³   ce753eef875f16fb.webpack.hot-update.json
+³   ³       ³   de5e7e6188e25637.webpack.hot-update.json
+³   ³       ³   e08c9d42d52d76f1.webpack.hot-update.json
+³   ³       ³   webpack.0d895e592126c752.hot-update.js
+³   ³       ³   webpack.301b99650cb0ca1f.hot-update.js
+³   ³       ³   webpack.4169ca75cf2da7db.hot-update.js
+³   ³       ³   webpack.5aa3bed99cbaf163.hot-update.js
+³   ³       ³   webpack.7af9d689d696e80d.hot-update.js
+³   ³       ³   webpack.829f1a4b2eac1db7.hot-update.js
+³   ³       ³   webpack.8a65aa76e7c04198.hot-update.js
+³   ³       ³   webpack.ce753eef875f16fb.hot-update.js
+³   ³       ³   webpack.de5e7e6188e25637.hot-update.js
+³   ³       ³   webpack.e08c9d42d52d76f1.hot-update.js
 ³   ³       ³   
 ³   ³       ÀÄÄÄapp
-³   ³           ³   layout.013576dc4e756a5a.hot-update.js
-³   ³           ³   layout.366eaa64d93d1c0d.hot-update.js
-³   ³           ³   layout.5b145144970ba30c.hot-update.js
-³   ³           ³   layout.f2c1ebb656115405.hot-update.js
-³   ³           ³   
-³   ³           ÀÄÄÄadmin
-³   ³               ÀÄÄÄgroup-bets
-³   ³                       page.013576dc4e756a5a.hot-update.js
-³   ³                       
+³   ³               layout.0d895e592126c752.hot-update.js
+³   ³               
 ³   ÀÄÄÄtypes
 ³       ³   cache-life.d.ts
 ³       ³   package.json
@@ -303,22 +313,19 @@ C:.
 ³           ÃÄÄÄadmin
 ³           ³   ³   page.ts
 ³           ³   ³   
-³           ³   ÃÄÄÄgroup-bets
-³           ³   ³   ³   page.ts
-³           ³   ³   ³   
-³           ³   ³   ÃÄÄÄnew
-³           ³   ³   ³       page.ts
-³           ³   ³   ³       
-³           ³   ³   ÀÄÄÄ[id]
-³           ³   ³           page.ts
-³           ³   ³           
 ³           ³   ÃÄÄÄlogin
 ³           ³   ³       page.ts
 ³           ³   ³       
-³           ³   ÀÄÄÄmatch
-³           ³       ÀÄÄÄ[id]
-³           ³               page.ts
-³           ³               
+³           ³   ÃÄÄÄmatch
+³           ³   ³   ÀÄÄÄ[id]
+³           ³   ³           page.ts
+³           ³   ³           
+³           ³   ÃÄÄÄnew
+³           ³   ³       page.ts
+³           ³   ³       
+³           ³   ÀÄÄÄpurchases
+³           ³           page.ts
+³           ³           
 ³           ÃÄÄÄapi
 ³           ³   ÀÄÄÄadmin
 ³           ³       ÀÄÄÄlogin
@@ -326,8 +333,18 @@ C:.
 ³           ³               
 ³           ÀÄÄÄuser
 ³               ÀÄÄÄ[id]
-³                       page.ts
-³                       
+³                   ³   page.ts
+³                   ³   
+³                   ÃÄÄÄgroup
+³                   ³   ÀÄÄÄ[group]
+³                   ³           page.ts
+³                   ³           
+³                   ÃÄÄÄhistory
+³                   ³       page.ts
+³                   ³       
+³                   ÀÄÄÄshop
+³                           page.ts
+³                           
 ÃÄÄÄapp
 ³   ³   favicon.ico
 ³   ³   globals.css
@@ -337,15 +354,6 @@ C:.
 ³   ÃÄÄÄadmin
 ³   ³   ³   page.tsx
 ³   ³   ³   
-³   ³   ÃÄÄÄgroup-bets
-³   ³   ³   ³   page.tsx
-³   ³   ³   ³   
-³   ³   ³   ÃÄÄÄnew
-³   ³   ³   ³       page.tsx
-³   ³   ³   ³       
-³   ³   ³   ÀÄÄÄ[id]
-³   ³   ³           page.tsx
-³   ³   ³           
 ³   ³   ÃÄÄÄlogin
 ³   ³   ³       page.tsx
 ³   ³   ³       
@@ -361,8 +369,6 @@ C:.
 ³   ³           
 ³   ÃÄÄÄapi
 ³   ³   ÃÄÄÄadmin
-³   ³   ³   ³   settle-group.ts
-³   ³   ³   ³   
 ³   ³   ³   ÀÄÄÄlogin
 ³   ³   ³           route.ts
 ³   ³   ³           
@@ -383,9 +389,6 @@ C:.
 ³           ³   ÀÄÄÄ[group]
 ³           ³           page.tsx
 ³           ³           
-³           ÃÄÄÄgroup-bets
-³           ³       page.tsx
-³           ³       
 ³           ÃÄÄÄhistory
 ³           ³       page.tsx
 ³           ³       
@@ -393,7 +396,6 @@ C:.
 ³                   page.tsx
 ³                   
 ÃÄÄÄlib
-³       supabaseAdmin.ts
 ³       supabaseClient.ts
 ³       
 ÃÄÄÄnode_modules
@@ -23860,14 +23862,10 @@ C:.
 ³   ÀÄÄÄapi
 ³       ³   settle.ts
 ³       ³   
-³       ÃÄÄÄadmin
-³       ³   ÀÄÄÄlogin
-³       ³           route.ts
-³       ³           
-³       ÀÄÄÄgroup-odds
-³               index.ts
-³               [id].ts
-³               
+³       ÀÄÄÄadmin
+³           ÀÄÄÄlogin
+³                   route.ts
+³                   
 ÃÄÄÄpublic
 ³       file.svg
 ³       globe.svg
