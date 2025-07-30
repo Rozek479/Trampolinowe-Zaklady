@@ -1,0 +1,70 @@
+Folder PATH listing
+Volume serial number is 0000005B 78F5:7E65
+C:\USERS\MIKEM\TRAMPOLINOWEZAKLADY\APP
+³   favicon.ico
+³   globals.css
+³   layout.tsx
+³   page.tsx
+³   
+ÃÄÄÄadmin
+³   ³   page.tsx
+³   ³   
+³   ÃÄÄÄgroups
+³   ³   ³   page.tsx
+³   ³   ³   
+³   ³   ÀÄÄÄ[id]
+³   ³       ³   page.tsx
+³   ³       ³   
+³   ³       ÀÄÄÄbets
+³   ³               page.tsx
+³   ³               
+³   ÃÄÄÄlogin
+³   ³       page.tsx
+³   ³       
+³   ÃÄÄÄmatch
+³   ³   ÀÄÄÄ[id]
+³   ³           page.tsx
+³   ³           
+³   ÃÄÄÄnew
+³   ³       page.tsx
+³   ³       
+³   ÀÄÄÄpurchases
+³           page.tsx
+³           
+ÃÄÄÄapi
+³   ÃÄÄÄadmin
+³   ³   ÀÄÄÄlogin
+³   ³           route.ts
+³   ³           
+³   ÃÄÄÄgroup_bets
+³   ³       route.ts
+³   ³       
+³   ÀÄÄÄshop
+³       ³   route.ts
+³       ³   
+³       ÀÄÄÄpurchase
+³               route.ts
+³               
+ÃÄÄÄcomponents
+³       Navbar.tsx
+³       
+ÃÄÄÄlogin
+³       page.tsx
+³       
+ÀÄÄÄuser
+    ÀÄÄÄ[id]
+        ³   page.tsx
+        ³   
+        ÃÄÄÄgroup
+        ³   ÀÄÄÄ[group]
+        ³       ³   page.tsx
+        ³       ³   
+        ³       ÀÄÄÄbets
+        ³               page.tsx
+        ³               
+        ÃÄÄÄhistory
+        ³       page.tsx
+        ³       
+        ÀÄÄÄshop
+                page.tsx
+                

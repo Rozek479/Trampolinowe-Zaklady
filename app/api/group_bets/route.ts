@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const group = searchParams.get('group_name') || undefined
 
-  const query = supabase.from('group_bets').select('*')
+  const query = supabase.from('group_bets').select('*').eq('closed', false)
   if (group) query.eq('group_name', group)
 
   const { data, error } = await query

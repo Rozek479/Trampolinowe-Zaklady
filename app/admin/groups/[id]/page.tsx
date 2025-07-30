@@ -1,3 +1,4 @@
+// app/admin/groups/[id]/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -10,21 +11,31 @@ type GroupBet = {
   odd: number
 }
 
+type Wager = {
+  id: number
+  user_id: number
+  amount: number
+  odd_at_time: number
+  is_win: boolean | null
+}
+
 export default function AdminGroupPage() {
   const { id: groupName } = useParams() as { id: string }
-  const [bets, setBets]       = useState<GroupBet[]>([])
-  const [newDesc, setNewDesc] = useState('')
-  const [newOdd, setNewOdd]   = useState('')
-  // tutaj przechowujemy, które zakłady mają być uznane za wygrane
-  const [isWin, setIsWin]     = useState<Record<number, boolean>>({})
 
-  // 1) Pobierz zakłady
+  const [bets, setBets] = useState<GroupBet[]>([])
+  const [wagersMap, setWagersMap] = useState<Record<number, Wager[]>>({})
+  const [newDesc, setNewDesc] = useState('')
+  const [newOdd, setNewOdd] = useState('')
+  const [marks, setMarks] = useState<Record<number, boolean>>({})
+
+  // 1) Pobierz aktywne zakłady grupowe
   useEffect(() => {
     if (!groupName) return
     supabase
       .from('group_bets')
-      .select('id, description, odd')
+      .select('id,description,odd')
       .eq('group_name', groupName)
+      .eq('closed', false)
       .order('id', { ascending: true })
       .then(({ data, error }) => {
         if (error) console.error(error)
@@ -32,7 +43,25 @@ export default function AdminGroupPage() {
       })
   }, [groupName])
 
-  // 2) Dodanie nowego zakładu
+  // 2) Dla każdego bet pobierz jego wagers
+  useEffect(() => {
+    if (!bets.length) return
+    ;(async () => {
+      const map: Record<number, Wager[]> = {}
+      for (const b of bets) {
+        const { data, error } = await supabase
+          .from('group_bet_wagers')
+          .select('id,user_id,amount,odd_at_time,is_win')
+          .eq('group_bet_id', b.id)    // gwarantuje, że bet.id jest liczbą
+          .order('created_at', { ascending: false })
+        if (error) console.error(error)
+        map[b.id] = data || []
+      }
+      setWagersMap(map)
+    })()
+  }, [bets])
+
+  // 3) Dodanie nowego zakładu
   const addBet = async () => {
     if (!newDesc.trim() || !newOdd) {
       return alert('Podaj opis i kurs zakładu')
@@ -47,18 +76,19 @@ export default function AdminGroupPage() {
       .insert([{ group_name: groupName, description: newDesc, odd: oddValue }])
     if (error) return alert(error.message)
 
-    // odśwież listę
-    const { data } = await supabase
-      .from('group_bets')
-      .select('id, description, odd')
-      .eq('group_name', groupName)
-      .order('id', { ascending: true })
-    setBets(data || [])
     setNewDesc('')
     setNewOdd('')
+    // odśwież listę zakładów
+    const { data } = await supabase
+      .from('group_bets')
+      .select('id,description,odd')
+      .eq('group_name', groupName)
+      .eq('closed', false)
+      .order('id', { ascending: true })
+    setBets(data || [])
   }
 
-  // 3) Aktualizacja kursu
+  // 4) Aktualizacja kursu
   const updateOdd = async (betId: number, odd: number) => {
     if (odd <= 0) return alert('Kurs musi być > 0')
     const { error } = await supabase
@@ -66,134 +96,137 @@ export default function AdminGroupPage() {
       .update({ odd })
       .eq('id', betId)
     if (error) return alert(error.message)
-    setBets(bs => bs.map(b => b.id === betId ? { ...b, odd } : b))
+    setBets(bs => bs.map(b => (b.id === betId ? { ...b, odd } : b)))
   }
 
-  // 4) Rozliczenie zakładu: usuń wszystkie wagers + sam bet; wypłać tylko, jeśli "Wygrany"
+  // 5) Rozliczenie zakładu
   const settleBet = async (bet: GroupBet) => {
-    const win = !!isWin[bet.id]
+    const win = !!marks[bet.id]
+    const wagers = wagersMap[bet.id] || []
 
-    // 4.1) Pobierz wszystkie obstawienia
-    const { data: wagers = [], error: fetchErr } = await supabase
-      .from('group_bet_wagers')
-      .select('id, user_id, amount, odd_at_time')
-      .eq('group_bet_id', bet.id)
-
-    if (fetchErr) {
-      return alert('Błąd przy pobieraniu obstawień: ' + fetchErr.message)
-    }
-
-    // 4.2) Dla każdego obstawienia: jeśli wygrany, wypłać; potem usuń
+    // 5.1) Oznacz każdy wager i wypłać punkty zwycięzcom
     for (const w of wagers) {
+      // oznacz wynik
+      await supabase
+        .from('group_bet_wagers')
+        .update({ is_win: win })
+        .eq('id', w.id)
+
+      // wypłata, jeśli win
       if (win) {
         const payout = w.amount * w.odd_at_time
-        const { error: payErr } = await supabase.rpc('increment_points', {
+        await supabase.rpc('increment_points', {
           user_id: w.user_id,
           diff: payout
         })
-        if (payErr) {
-          console.error('Błąd wypłaty punktów:', payErr)
-        }
-      }
-
-      const { error: delErr } = await supabase
-        .from('group_bet_wagers')
-        .delete()
-        .eq('id', w.id)
-      if (delErr) {
-        console.error('Błąd usuwania obstawienia:', delErr)
       }
     }
 
-    // 4.3) Usuń sam zakład
-    const { error: betDelErr } = await supabase
+    // 5.2) Oznacz zakład jako zamknięty
+    await supabase
       .from('group_bets')
-      .delete()
+      .update({ closed: true })
       .eq('id', bet.id)
-    if (betDelErr) {
-      return alert('Błąd usuwania zakładu: ' + betDelErr.message)
-    }
 
-    // 4.4) Zaktualizuj stan, żeby od razu zniknął
+    // 5.3) Odśwież UI
     setBets(bs => bs.filter(b => b.id !== bet.id))
+    setMarks(m => {
+      const next = { ...m }
+      delete next[bet.id]
+      return next
+    })
+    const nextMap = { ...wagersMap }
+    delete nextMap[bet.id]
+    setWagersMap(nextMap)
 
-    alert(
-      win
-        ? `Zakład "${bet.description}" rozliczony jako WYGRANY, wypłacono ${wagers.length} obstawień.`
-        : `Zakład "${bet.description}" rozliczony jako PRZEGRANY, usunięto ${wagers.length} obstawień.`
-    )
+    alert(win ? 'Zakład rozliczony jako WYGRANY' : 'Zakład rozliczony jako PRZEGRANA')
   }
 
   return (
     <div className="p-6 max-w-xl mx-auto space-y-8">
-      <section>
-        <h1 className="text-2xl mb-4">Zakłady grupy {groupName}</h1>
-        {bets.length === 0 ? (
-          <p className="text-gray-600">Brak zakładów w tej grupie.</p>
-        ) : (
-          <div className="space-y-3 mb-6">
-            {bets.map(b => (
-              <div key={b.id} className="flex items-center space-x-2">
-                <span className="flex-1">
-                  {b.description} — <strong>Kurs:</strong> {b.odd}
-                </span>
+      <h1 className="text-2xl font-semibold mb-4">
+        Zakłady grupy {groupName} (admin)
+      </h1>
 
-                {/* checkbox Wygrany */}
-                <label className="flex items-center space-x-1">
-                  <input
-                    type="checkbox"
-                    checked={!!isWin[b.id]}
-                    onChange={e => setIsWin(s => ({ ...s, [b.id]: e.target.checked }))}
-                  />
-                  <span>Wygrany</span>
-                </label>
-
-                <button
-                  onClick={() => settleBet(b)}
-                  className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Rozlicz
-                </button>
-
+      {bets.length === 0 ? (
+        <p className="text-gray-600">Brak aktywnych zakładów.</p>
+      ) : (
+        bets.map(bet => (
+          <div key={bet.id} className="p-4 border rounded space-y-2">
+            <div className="flex items-center space-x-4">
+              <span className="flex-1">
+                {bet.description} — kurs <strong>{bet.odd}</strong>
+              </span>
+              <label className="flex items-center space-x-1">
                 <input
-                  type="number"
-                  step="0.01"
-                  defaultValue={b.odd}
-                  onBlur={e => {
-                    const val = parseFloat(e.currentTarget.value)
-                    if (!isNaN(val)) updateOdd(b.id, val)
-                  }}
-                  className="w-20 border p-1"
+                  type="checkbox"
+                  checked={!!marks[bet.id]}
+                  onChange={e =>
+                    setMarks(m => ({ ...m, [bet.id]: e.target.checked }))
+                  }
                 />
-              </div>
-            ))}
-          </div>
-        )}
+                <span>Wygrany</span>
+              </label>
+              <button
+                onClick={() => settleBet(bet)}
+                className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Rozlicz
+              </button>
+              <input
+                type="number"
+                step="0.01"
+                defaultValue={bet.odd}
+                onBlur={e => {
+                  const val = parseFloat(e.currentTarget.value)
+                  if (!isNaN(val)) updateOdd(bet.id, val)
+                }}
+                className="w-24 border p-1 rounded"
+              />
+            </div>
 
-        {/* formularz dodawania */}
-        <div className="space-y-2">
-          <input
-            placeholder="Opis zakładu"
-            value={newDesc}
-            onChange={e => setNewDesc(e.target.value)}
-            className="w-full border p-2 rounded"
-          />
-          <input
-            type="number"
-            step="0.01"
-            placeholder="Kurs"
-            value={newOdd}
-            onChange={e => setNewOdd(e.target.value)}
-            className="w-full border p-2 rounded"
-          />
-          <button
-            onClick={addBet}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-          >
-            Dodaj nowy zakład
-          </button>
-        </div>
-      </section>
+            {wagersMap[bet.id] && (
+              <ul className="pl-4 list-disc text-sm text-gray-700">
+                {wagersMap[bet.id].map(w => (
+                  <li key={w.id}>
+                    User #{w.user_id}: {w.amount} pkt @ {w.odd_at_time} —{' '}
+                    {w.is_win == null
+                      ? 'Oczekuje'
+                      : w.is_win
+                      ? 'Wygrana'
+                      : 'Przegrana'}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))
+      )}
+
+      {/* Dodawanie nowego zakładu */}
+      <div className="pt-6 border-t space-y-2">
+        <h2 className="text-lg">Nowy zakład</h2>
+        <input
+          placeholder="Opis"
+          value={newDesc}
+          onChange={e => setNewDesc(e.target.value)}
+          className="w-full border p-2 rounded"
+        />
+        <input
+          type="number"
+          step="0.01"
+          placeholder="Kurs"
+          value={newOdd}
+          onChange={e => setNewOdd(e.target.value)}
+          className="w-full border p-2 rounded"
+        />
+        <button
+          onClick={addBet}
+          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+        >
+          Dodaj zakład
+        </button>
+      </div>
     </div>
   )
 }

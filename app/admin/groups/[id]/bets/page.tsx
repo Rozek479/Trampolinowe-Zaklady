@@ -1,82 +1,128 @@
+// app/admin/groups/[id]/bets/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 
-type GroupBet = { id: number, description: string, odd: number }
+type Wager = {
+  id: number
+  user_id: number
+  amount: number
+  odd_at_time: number
+  is_win: boolean | null
+}
 
-export default function AdminGroupBets() {
-  const { id: group } = useParams() as { id: string }
-  const [bets, setBets] = useState<GroupBet[]>([])
-  const [desc, setDesc] = useState('')
-  const [odd, setOdd] = useState('')
+export default function AdminGroupWagersPage() {
+  const { id: groupName } = useParams() as { id: string }
+  const [wagers, setWagers] = useState<Wager[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [marks, setMarks] = useState<Record<number, boolean>>({})
 
+  // Pobierz wszystkie wagers dla grupy (via join na group_bets)
   useEffect(() => {
-    fetch(`/api/group_bets?group_name=${group}`)
-      .then(r => r.json())
-      .then(setBets)
-  }, [group])
+    async function loadWagers() {
+      try {
+        const { data, error: gwErr } = await supabase
+          .from('group_bet_wagers')
+          .select(`
+            id,
+            user_id,
+            amount,
+            odd_at_time,
+            is_win,
+            group_bets!inner(group_name)
+          `)
+          .eq('group_bets.group_name', groupName)
+          .order('created_at', { ascending: false })
 
-  const create = async () => {
-    await fetch('/api/group_bets', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ group_name: group, description: desc, odd: parseFloat(odd) })
-    })
-    setDesc(''); setOdd('')
-    // odśwież
-    const data = await fetch(`/api/group_bets?group_name=${group}`).then(r => r.json())
-    setBets(data)
+        if (gwErr) throw gwErr
+        setWagers(data?.map(w => ({
+          id: w.id,
+          user_id: w.user_id,
+          amount: w.amount,
+          odd_at_time: w.odd_at_time,
+          is_win: w.is_win,
+        })) || [])
+        setLoading(false)
+      } catch (e: any) {
+        setError(e.message)
+        setLoading(false)
+      }
+    }
+    loadWagers()
+  }, [groupName])
+
+  const settleWager = async (wager: Wager) => {
+    const win = !!marks[wager.id]
+
+    // 1) Oznacz
+    const { error: updErr } = await supabase
+      .from('group_bet_wagers')
+      .update({ is_win: win })
+      .eq('id', wager.id)
+    if (updErr) {
+      console.error(updErr)
+      return alert('Błąd aktualizacji is_win: ' + updErr.message)
+    }
+
+    // 2) Wypłać punkty, jeśli wygrana
+    if (win) {
+      const payout = wager.amount * wager.odd_at_time
+      const { error: payErr } = await supabase.rpc('increment_points', {
+        user_id: wager.user_id,
+        diff: payout
+      })
+      if (payErr) {
+        console.error(payErr)
+        alert('Błąd wypłaty punktów: ' + payErr.message)
+      }
+    }
+
+    // 3) Odśwież
+    setWagers(ws =>
+      ws.map(w => (w.id === wager.id ? { ...w, is_win: win } : w))
+    )
+    alert(win ? 'Oznaczono jako WYGRANA' : 'Oznaczono jako PRZEGRANA')
   }
 
-  const updateOdd = async (id: number, newOdd: number) => {
-    await fetch('/api/group_bets', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, odd: newOdd })
-    })
-    setBets(b => b.map(x => x.id === id ? { ...x, odd: newOdd } : x))
+  if (loading) return <p className="p-6">Ładowanie…</p>
+  if (error) return <p className="p-6 text-red-600">{error}</p>
+  if (wagers.length === 0) {
+    return <p className="p-6">Brak obstawień w tej grupie.</p>
   }
 
   return (
-    <div className="p-6 max-w-lg mx-auto">
-      <h1 className="text-2xl mb-4">Zakłady grupy {group} (admin)</h1>
-
-      <div className="mb-6">
-        <input
-          className="border p-2 mr-2"
-          placeholder="Opis zakładu"
-          value={desc}
-          onChange={e => setDesc(e.target.value)}
-        />
-        <input
-          type="number"
-          step="0.01"
-          className="border p-2 mr-2 w-24"
-          placeholder="Kurs"
-          value={odd}
-          onChange={e => setOdd(e.target.value)}
-        />
-        <button onClick={create} className="bg-green-600 text-white px-4 py-2 rounded">
-          Dodaj
-        </button>
-      </div>
-
-      <ul className="space-y-4">
-        {bets.map(b => (
-          <li key={b.id} className="flex justify-between items-center">
-            <span>{b.description}</span>
-            <input
-              type="number"
-              step="0.01"
-              className="border p-1 w-20"
-              defaultValue={b.odd}
-              onBlur={e => updateOdd(b.id, parseFloat(e.currentTarget.value))}
-            />
-          </li>
-        ))}
-      </ul>
+    <div className="p-6 max-w-2xl mx-auto space-y-4">
+      <h1 className="text-2xl font-semibold mb-4">
+        Obstawienia grupy {groupName}
+      </h1>
+      {wagers.map(w => (
+        <div key={w.id} className="flex items-center justify-between p-4 border rounded">
+          <div>
+            User #{w.user_id}: {w.amount} pkt @ {w.odd_at_time}
+          </div>
+          <div className="flex items-center space-x-2">
+            <label className="flex items-center space-x-1">
+              <input
+                type="checkbox"
+                checked={!!marks[w.id]}
+                onChange={e =>
+                  setMarks(m => ({ ...m, [w.id]: e.target.checked }))
+                }
+              />
+              <span>Wygrany</span>
+            </label>
+            <button
+              onClick={() => settleWager(w)}
+              className="px-3 py-1 bg-blue-600 text-white rounded"
+            >
+              Zatwierdź
+            </button>
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

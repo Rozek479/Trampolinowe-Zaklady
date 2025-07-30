@@ -1,3 +1,4 @@
+// app/user/[id]/group/[group]/bets/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -5,7 +6,12 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 
-type GroupBet = { id: number; description: string; odd: number }
+type GroupBet = {
+  id: number
+  description: string
+  odd: number
+  closed: boolean        // <--- dodane
+}
 
 export default function GroupBetsPage() {
   const { id, group } = useParams() as { id: string; group: string }
@@ -22,11 +28,7 @@ export default function GroupBetsPage() {
       .eq('id', userId)
       .single()
       .then(({ data, error }) => {
-        if (error) {
-          console.error('Błąd pobrania punktów:', error)
-        } else if (data) {
-          setPoints(data.points)
-        }
+        if (data) setPoints(data.points)
       })
   }, [userId])
 
@@ -35,54 +37,29 @@ export default function GroupBetsPage() {
     fetch(`/api/group_bets?group_name=${encodeURIComponent(group)}`)
       .then(res => res.json())
       .then((data: GroupBet[]) => setBets(data))
-      .catch(err => console.error('Błąd fetch group_bets:', err))
   }, [group])
 
   // 3) Funkcja postawienia zakładu
   const place = async (gb: GroupBet) => {
+    if (gb.closed) return
+
     const amt = myBets[gb.id] || 0
+    if (amt < 1) return alert('Podaj poprawną kwotę (>= 1)')
+    if (amt > points) return alert(`Masz tylko ${points} pkt`)
 
-    if (amt < 1) {
-      return alert('Podaj poprawną kwotę (>= 1)')
-    }
-    if (amt > points) {
-      return alert(`Masz tylko ${points} pkt`)
-    }
-
-    // --- USUNIĘTO BLOKADĘ ---
-
-    // 3.1) dodaj obstawienie
     const { error: insErr } = await supabase
       .from('group_bet_wagers')
-      .insert([{
-        user_id: userId,
-        group_bet_id: gb.id,
-        amount: amt,
-        odd_at_time: gb.odd
-      }])
-    if (insErr) {
-      return alert('Błąd dodawania zakładu: ' + insErr.message)
-    }
+      .insert([{ user_id: userId, group_bet_id: gb.id, amount: amt, odd_at_time: gb.odd }])
+    if (insErr) return alert('Błąd dodawania zakładu: ' + insErr.message)
 
-    // 3.2) odejmij punkty
-    const { error: rpcErr } = await supabase.rpc('increment_points', {
-      user_id: userId,
-      diff: -amt
-    })
-    if (rpcErr) {
-      console.error('Błąd RPC odjęcia punktów:', rpcErr)
-    }
-
+    await supabase.rpc('increment_points', { user_id: userId, diff: -amt })
     setPoints(p => p - amt)
     alert(`Postawiono ${amt} pkt`)
   }
 
   return (
     <div className="p-6 max-w-md mx-auto">
-      <Link
-        href={`/user/${userId}/group/${group}`}
-        className="text-indigo-600 hover:underline mb-4 block"
-      >
+      <Link href={`/user/${userId}/group/${group}`} className="text-indigo-600 hover:underline mb-4 block">
         ← Wróć do grupy
       </Link>
       <h1 className="text-2xl mb-4">Zakłady grupy {group}</h1>
@@ -95,26 +72,31 @@ export default function GroupBetsPage() {
               <span>{gb.description}</span>
               <span className="font-bold">{gb.odd}</span>
             </div>
-            <div className="flex items-center">
-              <input
-                type="number"
-                min="1"
-                className="w-16 border p-1 mr-2"
-                placeholder="pkt"
-                onChange={e =>
-                  setMyBets(m => ({
-                    ...m,
-                    [gb.id]: Math.max(0, parseInt(e.target.value, 10) || 0)
-                  }))
-                }
-              />
-              <button
-                onClick={() => place(gb)}
-                className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-              >
-                Obstaw
-              </button>
-            </div>
+
+            {gb.closed ? (
+              <div className="text-red-600 font-semibold">Grupa zamknięta</div>
+            ) : (
+              <div className="flex items-center">
+                <input
+                  type="number"
+                  min="1"
+                  className="w-16 border p-1 mr-2"
+                  placeholder="pkt"
+                  onChange={e =>
+                    setMyBets(m => ({
+                      ...m,
+                      [gb.id]: Math.max(0, parseInt(e.target.value, 10) || 0)
+                    }))
+                  }
+                />
+                <button
+                  onClick={() => place(gb)}
+                  className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                >
+                  Obstaw
+                </button>
+              </div>
+            )}
           </div>
         ))}
         {bets.length === 0 && (
