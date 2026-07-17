@@ -18,7 +18,11 @@ export default function AdminPage() {
       .select('*')
       .eq('is_finished', false)       // <-- tylko nierozliczone
       .order('id', { ascending: true })
-      .then(({ data }) => setMatches(data || []))
+      .then(({ data, error }) => {
+  console.log("MATCHES:", data)
+  console.log("ERROR:", error)
+  setMatches(data || [])
+})
   }, [])
 
   return (
