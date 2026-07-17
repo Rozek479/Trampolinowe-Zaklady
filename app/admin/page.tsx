@@ -35,15 +35,23 @@ export default function AdminPage() {
         + Dodaj nowy mecz
       </Link>
 
-      <ul>
-        {matches.map(m => (
-          <li key={m.id} className="mb-2">
-            <Link href={`/admin/match/${m.id}`}>
-              {m.team_a} vs {m.team_b} (grupa {m.group})
-            </Link>
-          </li>
-        ))}
-      </ul>
+<div className="space-y-3">
+  {matches.map((m) => (
+    <Link
+      key={m.id}
+      href={`/match/${m.id}`}
+      className="block rounded-lg border p-4 hover:bg-gray-100 transition"
+    >
+      <div className="text-lg font-semibold">
+        {m.team_a} vs {m.team_b}
+      </div>
+
+      <div className="text-sm text-gray-500">
+        Grupa {m.group}
+      </div>
+    </Link>
+  ))}
+</div>
 
       <Link href="/admin/purchases" className="text-blue-600 mb-4 block">
         → Zamówienia w sklepie
