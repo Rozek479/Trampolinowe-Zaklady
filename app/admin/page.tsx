@@ -43,7 +43,7 @@ export default function AdminPage() {
   {matches.map((m) => (
     <Link
       key={m.id}
-      href={`/match/${m.id}`}
+      href={`/admin/match/${m.id}`}
       className="block rounded-lg border p-4 hover:bg-gray-100 transition"
     >
       <div className="text-lg font-semibold">
