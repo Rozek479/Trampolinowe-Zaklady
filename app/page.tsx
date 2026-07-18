@@ -35,7 +35,7 @@ export default function HomePage() {
 
   return (
     <div className="max-w-xl mx-auto p-6">
-      <h1 className="text-2xl mb-4 font-bold">Wybierz użytkownika</h1>
+      <h1 className="text-2xl mb-4 font-bold text-gray-900">Wybierz użytkownika</h1>
       {!selectedUser ? (
         <ul className="space-y-2">
           {users.map(user => (
@@ -50,10 +50,10 @@ export default function HomePage() {
           ))}
         </ul>
       ) : (
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4 bg-white p-6 rounded-lg">
           <div>
             <label className="block mb-1 text-gray-900 font-semibold">Użytkownik</label>
-            <div className="p-2 border rounded">{selectedUser.name}</div>
+            <div className="p-2 border rounded bg-white text-black">{selectedUser.name}</div>
           </div>
           <div>
             <label className="block mb-1 text-gray-900 font-semibold">Hasło</label>
@@ -61,7 +61,7 @@ export default function HomePage() {
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full border rounded p-2 text-black"
+              className="w-full border rounded p-2 bg-white text-black"
               placeholder="Wpisz hasło"
             />
           </div>
