@@ -71,12 +71,12 @@ const placeBet = async (odd: any) => {
 }
 
   return (
-    <div className="p-6 max-w-md mx-auto">
+    <div className="p-6 max-w-md mx-auto bg-white min-h-screen">
       <Link href={`/user/${userId}`} className="text-indigo-600 hover:underline mb-4 block">
         ← Wróć do profilu
       </Link>
 
-      <h1 className="text-2xl mb-4">Grupa {group}</h1>
+      <h1 className="text-2xl mb-4 text-gray-900 font-bold">Grupa {group}</h1>
 
       {/* nowy przycisk */}
       <div className="mb-6">
@@ -90,13 +90,13 @@ const placeBet = async (odd: any) => {
 
       {/* Lista zawodników */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">Zawodnicy:</h2>
+        <h2 className="text-xl font-semibold mb-2 text-gray-900">Zawodnicy:</h2>
         {players.length === 0 ? (
           <p className="text-gray-500">Brak zawodników w tej grupie.</p>
         ) : (
           <ul className="space-y-1">
             {players.map((player, i) => (
-              <li key={i} className="flex justify-between border-b py-1">
+              <li key={i} className="flex justify-between border-b py-1 text-gray-900">
                 <span>{player.name}</span>
                 <span className="font-bold">{player.points} pkt</span>
               </li>
@@ -107,12 +107,12 @@ const placeBet = async (odd: any) => {
 
       {!selected ? (
         <>
-          <h2 className="text-lg mb-4">Wybierz mecz:</h2>
+          <h2 className="text-lg mb-4 text-gray-900">Wybierz mecz:</h2>
           {matches.map(m => (
             <button
               key={m.id}
               onClick={() => setSelected(m.id)}
-              className={`w-full text-left p-3 mb-2 border rounded shadow
+              className={`w-full text-left p-3 mb-2 border rounded shadow text-gray-900
                 ${m.is_finished ? 'bg-red-100' : 'bg-white hover:bg-gray-100'}`}
             >
               <div className="flex justify-between">
@@ -131,7 +131,7 @@ const placeBet = async (odd: any) => {
           <button onClick={() => setSelected(null)} className="text-indigo-600 hover:underline mb-4 block">
             ← Wybierz inny mecz
           </button>
-          <h2 className="text-xl mb-2">
+          <h2 className="text-xl mb-2 text-gray-900">
             Zakłady na {matches.find(m => m.id === selected)?.team_a} vs {matches.find(m => m.id === selected)?.team_b}
           </h2>
           
@@ -149,12 +149,12 @@ const placeBet = async (odd: any) => {
             )}
           </div>
 
-          <p className="mb-4 font-medium">Twoje saldo: {points} pkt</p>
+          <p className="mb-4 font-medium text-gray-900">Twoje saldo: {points} pkt</p>
 
           {matches.find(m => m.id === selected)?.is_finished ? (
             <div className="space-y-3">
               {matches.find(m => m.id === selected)?.odds.map((o: any) => (
-                <div key={o.id} className="p-4 border rounded bg-red-50 shadow-sm">
+                <div key={o.id} className="p-4 border rounded bg-red-50 shadow-sm text-gray-900">
                   <div className="flex justify-between">
                     <span>{o.description}</span>
                     <span className="font-bold">{o.odd}</span>
@@ -166,7 +166,7 @@ const placeBet = async (odd: any) => {
           ) : (
             <div className="space-y-4">
               {matches.find(m => m.id === selected)!.odds.map((o: any) => (
-                <div key={o.id} className="p-4 border rounded bg-white shadow">
+                <div key={o.id} className="p-4 border rounded bg-white shadow text-gray-900">
                   <div className="flex justify-between mb-2">
                     <span>{o.description}</span>
                     <span className="font-bold">{o.odd}</span>
@@ -177,7 +177,7 @@ const placeBet = async (odd: any) => {
                       placeholder="pkt"
                       value={amounts[o.id] || ''}
                       onChange={e => setAmounts(a => ({ ...a, [o.id]: e.target.value }))}
-                      className="w-16 border p-1 mr-2 text-black"
+                      className="w-16 border p-1 mr-2 bg-white text-black"
                     />
                     <button
                       onClick={() => placeBet(o)}

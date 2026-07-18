@@ -92,21 +92,21 @@ export default function UserDashboard() {
     }
   }
 
-  if (loading) return <p className="p-6">Ładowanie profilu...</p>
+  if (loading) return <p className="p-6 text-gray-900">Ładowanie profilu...</p>
   if (!user)  return <p className="p-6 text-red-600">Użytkownik nie znaleziony</p>
 
   // Czy sklep jest zablokowany?
   const shopBlocked = !!user.loan_amount && user.loan_amount > 0
 
   return (
-    <div className="p-6 max-w-md mx-auto">
-      <h1 className="text-2xl mb-2">Cześć, {user.name}!</h1>
-      <p className="mb-4">Twoje saldo: {user.points} pkt</p>
+    <div className="p-6 max-w-md mx-auto bg-white min-h-screen">
+      <h1 className="text-2xl mb-2 text-gray-900 font-bold">Cześć, {user.name}!</h1>
+      <p className="mb-4 text-gray-900">Twoje saldo: {user.points} pkt</p>
 
       {/* BANK */}
       <div className="mb-6 border p-4 rounded bg-gray-50">
-        <h2 className="text-lg font-bold mb-2">Bank</h2>
-        <div className="mb-2">
+        <h2 className="text-lg font-bold mb-2 text-gray-900">Bank</h2>
+        <div className="mb-2 text-gray-900">
           <b>Pożyczka:</b>{' '}
           {user.loan_amount && user.loan_amount > 0
             ? (
@@ -135,7 +135,7 @@ export default function UserDashboard() {
               placeholder="Kwota (max 5000)"
               value={loanInput}
               onChange={e => setLoanInput(e.target.value)}
-              className="border rounded p-2 w-32 text-black"
+              className="border rounded p-2 w-32 bg-white text-black"
               min={1}
               max={5000}
             />
@@ -178,7 +178,7 @@ export default function UserDashboard() {
         </Link>
       </div>
 
-      <h2 className="text-xl mb-2">Twoje grupy</h2>
+      <h2 className="text-xl mb-2 text-gray-900">Twoje grupy</h2>
       <div className="grid grid-cols-4 gap-2">
         {groups.map((g) => (
           <Link
