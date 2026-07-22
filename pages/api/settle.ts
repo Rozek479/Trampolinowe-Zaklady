@@ -28,33 +28,60 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .eq('match_id', match_id)
     if (be) throw be
 
+    const errors: string[] = []
+
     // 3) Rozlicz każdy zakład
     for (const b of bets || []) {
-      // TERAZ poprawnie używamy odd_id:
       const won = b.odd_id !== null && winning_odds.includes(b.odd_id)
       const rate = b.placed_odd ?? 1
-      const payout = won ? b.amount * rate : 0
+      // Math.round, bo kolumna users.points jest typu integer,
+      // a amount * rate może wyjść niecałkowite (np. 10 * 1.75 = 17.5)
+      const payout = won ? Math.round(b.amount * rate) : 0
 
       // 3a) oznacz zakład jako rozliczony
-      await supabaseAdmin
+      const { error: betUpdateErr } = await supabaseAdmin
         .from('bets')
         .update({ is_win: won, payout, status: 'settled' })
         .eq('id', b.id)
 
-      // 3b) zaktualizuj punkty użytkownika
-      const { data: u } = await supabaseAdmin
-        .from('users')
-        .select('points')
-        .eq('id', b.user_id)
-        .single()
-      if (u) {
-        // przy przegranej: nie ruszamy punktów (stawka zdjęta przy obstawianiu)
-        const newPoints = u.points + (won ? payout : 0)
-        await supabaseAdmin
+      if (betUpdateErr) {
+        console.error('Błąd aktualizacji zakładu', b.id, betUpdateErr)
+        errors.push(`bet ${b.id}: ${betUpdateErr.message}`)
+        continue
+      }
+
+      // 3b) zaktualizuj punkty użytkownika (tylko przy wygranej -
+      // przy przegranej nie ruszamy punktów, stawka zdjęta przy obstawianiu)
+      if (won && b.user_id !== null) {
+        const { data: u, error: userSelectErr } = await supabaseAdmin
+          .from('users')
+          .select('points')
+          .eq('id', b.user_id)
+          .single()
+
+        if (userSelectErr || !u) {
+          console.error('Błąd pobierania usera', b.user_id, userSelectErr)
+          errors.push(`user ${b.user_id} select: ${userSelectErr?.message}`)
+          continue
+        }
+
+        const newPoints = u.points + payout
+        const { error: userUpdateErr } = await supabaseAdmin
           .from('users')
           .update({ points: newPoints })
           .eq('id', b.user_id)
+
+        if (userUpdateErr) {
+          console.error('Błąd aktualizacji punktów', b.user_id, userUpdateErr)
+          errors.push(`user ${b.user_id} update: ${userUpdateErr.message}`)
+        }
       }
+    }
+
+    if (errors.length > 0) {
+      // Rozliczenie się wykonało, ale część operacji się nie powiodła -
+      // zwracamy 200, ale z listą błędów, żeby było widać w konsoli przeglądarki
+      return res.status(200).json({ status: 'partial', errors })
     }
 
     return res.status(200).json({ status: 'ok' })
