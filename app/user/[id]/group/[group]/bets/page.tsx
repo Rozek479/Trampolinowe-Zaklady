@@ -10,13 +10,15 @@ type GroupBet = {
   id: number
   description: string
   odd: number
-  closed: boolean        // <--- dodane
+  closed: boolean
+  won: boolean | null   // <--- nowe: null = nierozliczony, true/false = wynik
 }
 
 export default function GroupBetsPage() {
   const { id, group } = useParams() as { id: string; group: string }
   const userId = Number(id)
-  const [bets, setBets] = useState<GroupBet[]>([])
+  const [activeBets, setActiveBets] = useState<GroupBet[]>([])
+  const [settledBets, setSettledBets] = useState<GroupBet[]>([])
   const [myBets, setMyBets] = useState<Record<number, number>>({})
   const [points, setPoints] = useState(0)
 
@@ -27,16 +29,19 @@ export default function GroupBetsPage() {
       .select('points')
       .eq('id', userId)
       .single()
-      .then(({ data, error }) => {
+      .then(({ data }) => {
         if (data) setPoints(data.points)
       })
   }, [userId])
 
-  // 2) Pobierz dostępne zakłady grupowe
+  // 2) Pobierz zakłady grupowe (aktywne + rozliczone), potem podziel po stronie klienta
   useEffect(() => {
-    fetch(`/api/group_bets?group_name=${encodeURIComponent(group)}`)
+    fetch(`/api/group_bets?group_name=${encodeURIComponent(group)}&include_closed=true`)
       .then(res => res.json())
-      .then((data: GroupBet[]) => setBets(data))
+      .then((data: GroupBet[]) => {
+        setActiveBets(data.filter(b => !b.closed))
+        setSettledBets(data.filter(b => b.closed))
+      })
   }, [group])
 
   // 3) Funkcja postawienia zakładu
@@ -66,43 +71,56 @@ export default function GroupBetsPage() {
       <p className="mb-4">Twoje saldo: {points} pkt</p>
 
       <div className="space-y-4">
-        {bets.map(gb => (
+        {activeBets.map(gb => (
           <div key={gb.id} className="p-4 border rounded shadow">
             <div className="flex justify-between mb-2">
               <span>{gb.description}</span>
               <span className="font-bold">{gb.odd}</span>
             </div>
-
-            {gb.closed ? (
-              <div className="text-red-600 font-semibold">Grupa zamknięta</div>
-            ) : (
-              <div className="flex items-center">
-                <input
-                  type="number"
-                  min="1"
-                  className="w-16 border p-1 mr-2"
-                  placeholder="pkt"
-                  onChange={e =>
-                    setMyBets(m => ({
-                      ...m,
-                      [gb.id]: Math.max(0, parseInt(e.target.value, 10) || 0)
-                    }))
-                  }
-                />
-                <button
-                  onClick={() => place(gb)}
-                  className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                >
-                  Obstaw
-                </button>
-              </div>
-            )}
+            <div className="flex items-center">
+              <input
+                type="number"
+                min="1"
+                className="w-16 border p-1 mr-2"
+                placeholder="pkt"
+                onChange={e =>
+                  setMyBets(m => ({
+                    ...m,
+                    [gb.id]: Math.max(0, parseInt(e.target.value, 10) || 0)
+                  }))
+                }
+              />
+              <button
+                onClick={() => place(gb)}
+                className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+              >
+                Obstaw
+              </button>
+            </div>
           </div>
         ))}
-        {bets.length === 0 && (
+        {activeBets.length === 0 && (
           <p className="text-gray-600">Brak dostępnych zakładów w tej grupie.</p>
         )}
       </div>
+
+      {settledBets.length > 0 && (
+        <div className="mt-8 pt-6 border-t space-y-3">
+          <h2 className="text-lg font-semibold">Rozliczone zakłady</h2>
+          {settledBets.map(gb => (
+            <div key={gb.id} className="p-3 border rounded flex items-center justify-between">
+              <span>{gb.description} <span className="text-gray-500">(kurs {gb.odd})</span></span>
+              {gb.won == null ? (
+                <span className="text-gray-500 text-sm">Oczekuje na rozliczenie</span>
+              ) : gb.won ? (
+                <span className="text-green-600 font-semibold">✅ Wygrany</span>
+              ) : (
+                <span className="text-red-600 font-semibold">❌ Przegrany</span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

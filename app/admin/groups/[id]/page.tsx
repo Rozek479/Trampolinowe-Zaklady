@@ -122,10 +122,10 @@ export default function AdminGroupPage() {
       }
     }
 
-    // 5.2) Oznacz zakład jako zamknięty
+    // 5.2) Oznacz zakład jako zamknięty i zapisz wynik (won)
     await supabase
       .from('group_bets')
-      .update({ closed: true })
+      .update({ closed: true, won: win })
       .eq('id', bet.id)
 
     // 5.3) Odśwież UI
@@ -189,7 +189,7 @@ export default function AdminGroupPage() {
               <ul className="pl-4 list-disc text-sm text-gray-700">
                 {wagersMap[bet.id].map(w => (
                   <li key={w.id}>
-                    User #{w.user_id}: {w.amount} pkt @ {w.odd_at_time} —{' '}
+                    User #{w.user_id}: {w.amount} pkt @ {w.odd_at_time} —{' '}
                     {w.is_win == null
                       ? 'Oczekuje'
                       : w.is_win
