@@ -27,7 +27,7 @@ export default function GroupPage() {
   useEffect(() => {
     supabase
       .from('matches')
-      .select('id,team_a,team_b,is_finished,result,description,odds(id,description,odd)')
+      .select('id,team_a,team_b,is_finished,result,description,winning_odds,odds(id,description,odd)')
       .eq('group', group)
       .order('id', { ascending: true })
       .then(({ data }) => setMatches(data || []))
@@ -153,15 +153,30 @@ const placeBet = async (odd: any) => {
 
           {matches.find(m => m.id === selected)?.is_finished ? (
             <div className="space-y-3">
-              {matches.find(m => m.id === selected)?.odds.map((o: any) => (
-                <div key={o.id} className="p-4 border rounded bg-red-50 shadow-sm text-gray-900">
-                  <div className="flex justify-between">
-                    <span>{o.description}</span>
-                    <span className="font-bold">{o.odd}</span>
+              {matches.find(m => m.id === selected)?.odds.map((o: any) => {
+                const winningOdds: number[] = (
+                  matches.find(m => m.id === selected)?.winning_odds || []
+                ).map((w: any) => Number(w))
+                const isWinning = winningOdds.includes(Number(o.id))
+                return (
+                  <div
+                    key={o.id}
+                    className={`p-4 border rounded shadow-sm text-gray-900 ${
+                      isWinning ? 'bg-green-50' : 'bg-red-50'
+                    }`}
+                  >
+                    <div className="flex justify-between">
+                      <span>{o.description}</span>
+                      <span className="font-bold">{o.odd}</span>
+                    </div>
+                    {isWinning ? (
+                      <div className="text-green-700 font-semibold">✅ Wygrany</div>
+                    ) : (
+                      <div className="text-red-600 font-semibold">❌ Przegrany</div>
+                    )}
                   </div>
-                  <div className="text-red-600 font-semibold">Zakłady zamknięte</div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : (
             <div className="space-y-4">
