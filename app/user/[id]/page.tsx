@@ -47,7 +47,7 @@ export default function UserDashboard() {
     setLoanLoading(true)
     const amount = parseInt(loanInput, 10)
     if (!amount || amount < 1) { setError('Podaj kwotę'); setLoanLoading(false); return }
-    if (amount > 5000) { setError('Max 5000 pkt'); setLoanLoading(false); return }
+    if (amount > 2000) { setError('Max 2000 pkt'); setLoanLoading(false); return }
     if (user?.loan_amount && user.loan_amount > 0) { setError('Masz już pożyczkę!'); setLoanLoading(false); return }
     // Dodaj punkty, ustaw loan_amount
     const { error } = await supabase
@@ -132,12 +132,12 @@ export default function UserDashboard() {
           >
             <input
               type="number"
-              placeholder="Kwota (max 5000)"
+              placeholder="Kwota (max 2000)"
               value={loanInput}
               onChange={e => setLoanInput(e.target.value)}
               className="border rounded p-2 w-32 bg-white text-black"
               min={1}
-              max={5000}
+              max={2000}
             />
             <button
               type="submit"
